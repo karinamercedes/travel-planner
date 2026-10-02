@@ -1,0 +1,55 @@
+:root { --accent: #2e6fbd; --bg: #f4f6fa; --text: #1c2430; --muted: #66707f; --line: #dde3ec; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; line-height: 1.5; }
+.app { max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { margin: 0 0 4px; font-size: 1.8rem; }
+h2 { margin: 0 0 12px; font-size: 1.1rem; }
+.muted { color: var(--muted); font-size: 0.9rem; margin: 0; }
+.card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 16px; box-shadow: 0 1px 3px rgba(20, 40, 80, 0.06); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.wide { grid-column: 1 / -1; }
+label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; font-weight: 600; }
+input, select { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+input:focus, select:focus, button:focus-visible { outline: 3px solid rgba(46, 111, 189, 0.35); outline-offset: 1px; }
+button { font: inherit; cursor: pointer; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
+button.primary { margin-top: 14px; background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; padding: 9px 16px; }
+.places { list-style: none; padding: 0; margin: 12px 0 0; }
+.places li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.places li div { display: flex; flex-direction: column; }
+.empty { text-align: center; color: var(--muted); margin-top: 24px; }
+.search { margin-bottom: 12px; }
+.search > label { font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 4px; }
+.row { display: flex; gap: 8px; }
+.row input { flex: 1; min-width: 0; }
+.results { list-style: none; padding: 0; margin: 8px 0 0; }
+.results button { width: 100%; text-align: left; display: flex; flex-direction: column; margin-bottom: 6px; }
+.selected { background: #eaf3ff; border-radius: 8px; padding: 8px 10px; font-size: 0.85rem; margin: 0 0 12px; }
+.error { color: #b3261e; font-size: 0.9rem; }
+.map { height: 320px; border-radius: 10px; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.banner { margin-top: 16px; padding: 12px 14px; border-radius: 12px; border: 1px solid; font-size: 0.95rem; }
+.banner p { margin: 6px 0 0; }
+.banner.fits { background: #e8f5ec; border-color: #7bc28f; }
+.banner.tight { background: #fff4d6; border-color: #e0a800; }
+.banner.toomuch { background: #fdecea; border-color: #e08a83; }
+.fixes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.removals { list-style: none; padding: 0; margin: 6px 0 0; }
+.removals li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 0; }
+.plan-controls { margin-top: 16px; display: flex; }
+.plan-controls .primary { margin-top: 0; }
+.stops { list-style: none; padding: 0; margin: 0; }
+.stops li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 8px 0; border-top: 1px solid var(--line); }
+.time { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--accent); min-width: 118px; }
+.stop-name { flex: 1; min-width: 140px; }
+.unscheduled { border-color: #e08a83; }
+dialog { border: 1px solid var(--line); border-radius: 12px; max-width: 420px; padding: 20px; }
+.file-button { position: relative; flex-direction: row; font-weight: 400; font-size: inherit; padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; cursor: pointer; }
+.file-button input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.file-button:focus-within { outline: 3px solid rgba(46, 111, 189, 0.35); outline-offset: 1px; }
+.print-only { display: none; }
+@media print {
+  .no-print, .stops select, .stops button { display: none !important; }
+  .print-only { display: block; }
+  body { background: #fff; }
+  .card { box-shadow: none; break-inside: avoid; }
+}
