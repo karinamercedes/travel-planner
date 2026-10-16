@@ -64,7 +64,7 @@ export default function CitySearch({ value, onChange }) {
         value={query}
         onChange={handleType}
         onFocus={() => setOpen(true)}
-        placeholder="e.g. Lisbon"
+        placeholder="e.g. Paris"
         autoComplete="off"
       />
       {open && status === 'loading' && <p className="muted">Searching...</p>}
