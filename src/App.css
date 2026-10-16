@@ -837,6 +837,17 @@ a.full-width, a.primary { text-decoration: none; }
     grid-column: 1 / -1;
   }
 
+  /* Smaller still: iOS renders the date's value in the phone's own locale
+     format ("16 Oct 2026"), not the dd/mm/yyyy this is tested against here
+     — a spelled-out month plus four-digit year is wider than it looks in
+     that placeholder, and that's rendered by iOS's own native control
+     chrome, which doesn't reliably respect overflow:hidden the way normal
+     text does. Nobody types into this field directly (it only opens the
+     native picker), so it doesn't need to match the other fields' size —
+     shrinking it gives the locale-formatted text real headroom instead of
+     trying to clip it after the fact. */
+  input[type="date"] { font-size: 0.85rem; padding-left: 10px; padding-right: 10px; }
+
   /* Subhead sits a bit further from its heading. */
   .section-heading .subhead { margin-top: 30px; }
 
