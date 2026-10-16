@@ -11,6 +11,17 @@ const DAY_END = 22 * 60
 
 const cost = (p) => p.durationMin + WALK_BUFFER_MIN
 
+// Fisher-Yates — only ever used when shuffling, so the plain plan (seed 0,
+// right after adding a place) stays exactly as deterministic as before.
+function shuffled(list) {
+  const arr = [...list]
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  }
+  return arr
+}
+
 function centre(list) {
   const lat = list.reduce((sum, p) => sum + p.lat, 0) / list.length
   const lon = list.reduce((sum, p) => sum + p.lon, 0) / list.length
@@ -37,7 +48,7 @@ function nearestIndex(p, centres) {
   return best
 }
 
-function assignToDays(places, trip) {
+function assignToDays(places, trip, shuffle) {
   const numDays = Math.max(1, trip.numDays || 1)
   const factor = PACE[trip.pace] ?? PACE.normal
   const hardCap = DAY_MIN * factor // the most a day can hold, in minutes
@@ -45,9 +56,31 @@ function assignToDays(places, trip) {
   const days = Array.from({ length: numDays }, () => ({ places: [], minutes: 0 }))
   const unscheduled = []
 
-  // Places the traveller moved to a specific day stay there.
+  // Places the traveller fixed to a specific day stay there, shuffle or not.
   const isPinned = (p) => Number.isInteger(p.pinnedDay) && p.pinnedDay >= 0 && p.pinnedDay < numDays
   for (const p of places.filter(isPinned)) days[p.pinnedDay].places.push(p)
+  days.forEach((d) => { d.minutes = d.places.reduce((sum, p) => sum + cost(p), 0) })
+
+  if (shuffle) {
+    // A real shuffle, not just a re-sort: every unpinned place is dropped
+    // onto a random day that still has room for it (fixed places are
+    // never touched, since they were pushed into `days` above already).
+    // The geography-based clustering below is what the plain, deterministic
+    // plan uses instead — reusing it here would tend to put the same
+    // places on the same days every time (k-means mostly converges to the
+    // same clusters regardless of input order), which is why shuffling
+    // used to look like it "did nothing": the day grouping barely moved,
+    // only the order within a day did.
+    for (const p of shuffled(places.filter((p) => !isPinned(p)))) {
+      const options = days.filter((d) => d.minutes + cost(p) <= hardCap)
+      if (options.length === 0) { unscheduled.push(p); continue }
+      const target = options[Math.floor(Math.random() * options.length)]
+      target.places.push(p)
+      target.minutes += cost(p)
+    }
+    return { days, unscheduled }
+  }
+
   const free = places.filter((p) => !isPinned(p))
 
   // 1. Starting centres. Days with pinned places start there. Other days start at the place
@@ -112,15 +145,22 @@ function assignToDays(places, trip) {
 // ---------- Step 2: order and times inside a day ----------
 
 // Nearest-neighbour route: always walk to the closest place not yet visited.
-function orderNearest(list, previous, dayPlaces) {
+function orderNearest(list, previous, dayPlaces, shuffle) {
   const left = [...list]
   const ordered = []
   let from = previous
   if (!from && left.length > 0) {
-    // First stop of the day: start at the place farthest from the day's centre, so the route sweeps inward.
-    const c = centre(dayPlaces)
-    left.sort((a, b) => distanceKm(b.lat, b.lon, c.lat, c.lon) - distanceKm(a.lat, a.lon, c.lat, c.lon))
-    from = left.shift()
+    if (shuffle) {
+      // Shuffling: start from a random stop instead of always the one
+      // farthest from the day's centre, so the whole route (and every
+      // time after it) comes out different on each click.
+      from = left.splice(Math.floor(Math.random() * left.length), 1)[0]
+    } else {
+      // First stop of the day: start at the place farthest from the day's centre, so the route sweeps inward.
+      const c = centre(dayPlaces)
+      left.sort((a, b) => distanceKm(b.lat, b.lon, c.lat, c.lon) - distanceKm(a.lat, a.lon, c.lat, c.lon))
+      from = left.shift()
+    }
     ordered.push(from)
   }
   while (left.length > 0) {
@@ -136,7 +176,7 @@ function orderNearest(list, previous, dayPlaces) {
   return ordered
 }
 
-function scheduleDay(dayPlaces) {
+function scheduleDay(dayPlaces, shuffle) {
   const slots = { morning: [], afternoon: [], evening: [] }
   const anyTime = []
   for (const p of dayPlaces) {
@@ -147,8 +187,10 @@ function scheduleDay(dayPlaces) {
   const slotMinutes = (s) => slots[s].reduce((sum, p) => sum + cost(p), 0)
   const unscheduled = []
 
-  // "Any time" places go to a part of the day that has room, preferring the one with nearby places.
-  for (const p of anyTime.sort((a, b) => cost(b) - cost(a))) {
+  // "Any time" places go to a part of the day that has room, preferring the
+  // one with nearby places — or, when shuffling, in a random order instead
+  // of always biggest-first, so they don't always land in the same slot.
+  for (const p of (shuffle ? shuffled(anyTime) : anyTime.sort((a, b) => cost(b) - cost(a)))) {
     const withRoom = SLOT_ORDER.filter((s) => slotMinutes(s) + cost(p) <= WINDOWS[s])
     if (withRoom.length === 0) { unscheduled.push(p); continue }
     let target = withRoom[0]
@@ -166,7 +208,7 @@ function scheduleDay(dayPlaces) {
   let previous = null
   for (const s of SLOT_ORDER) {
     cursor = Math.max(cursor, SLOT_START[s])
-    for (const p of orderNearest(slots[s], previous, dayPlaces)) {
+    for (const p of orderNearest(slots[s], previous, dayPlaces, shuffle)) {
       if (cursor + p.durationMin > DAY_END) { unscheduled.push(p); continue }
       stops.push({ placeId: p.id, start: cursor, end: cursor + p.durationMin })
       cursor += cost(p) // duration plus the walking buffer
@@ -178,13 +220,18 @@ function scheduleDay(dayPlaces) {
 
 // ---------- The one function the app calls ----------
 
-export function planTrip(places, trip) {
+export function planTrip(places, trip, seed = 0) {
+  // seed 0 is the plain, deterministic plan (same input -> same output,
+  // every time). Any other seed means "shuffle" was clicked: places fixed
+  // to a day (pinnedDay) never move, but everything else is free to land
+  // on a different day, in a different order, with different times.
+  const shuffle = seed !== 0
   const located = places.filter((p) => p.lat != null && p.lon != null)
   const noLocation = places.filter((p) => p.lat == null || p.lon == null) // old places without coordinates
 
-  const { days, unscheduled } = assignToDays(located, trip)
+  const { days, unscheduled } = assignToDays(located, trip, shuffle)
   const plannedDays = days.map((d, index) => {
-    const { stops, unscheduled: extra } = scheduleDay(d.places)
+    const { stops, unscheduled: extra } = scheduleDay(d.places, shuffle)
     unscheduled.push(...extra)
     return { index, stops }
   })

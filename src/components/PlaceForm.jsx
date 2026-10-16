@@ -1,48 +1,36 @@
-import { useState } from 'react'
 import { formatDuration } from '../utils/format'
 import PlaceSearch from './PlaceSearch'
 
-const emptyPlace = {
-  name: '', address: '', lat: null, lon: null,
-  durationMin: 90, timeOfDay: 'any', priority: 'nice',
-}
 const durations = [30, 60, 90, 120, 180, 240]
 
-export default function PlaceForm({ onAdd, city }) {
-  const [form, setForm] = useState(emptyPlace)
+// Purely presentational now: App.jsx owns the in-progress place's state,
+// since the "Add place" button that submits it lives further down the
+// page (after the feasibility banner), sharing one <form> with App.jsx.
+export default function PlaceForm({ form, onChange, onPick, city }) {
   const hasLocation = form.lat !== null
 
   function handleChange(e) {
     const { name, value } = e.target
-    setForm({ ...form, [name]: name === 'durationMin' ? Number(value) : value })
-  }
-
-  // Called by PlaceSearch when the user clicks a result.
-  function handlePick(result) {
-    setForm({ ...form, name: result.name, address: result.address, lat: result.lat, lon: result.lon })
-  }
-
-  function handleSubmit(e) {
-    e.preventDefault()
-    if (!hasLocation || !form.name.trim()) return
-    onAdd({ ...form, name: form.name.trim() })
-    setForm(emptyPlace)
+    onChange({ ...form, [name]: name === 'durationMin' ? Number(value) : value })
   }
 
   return (
-    <form className="card" onSubmit={handleSubmit}>
-      <h2>Add a place</h2>
-      <PlaceSearch city={city} onPick={handlePick} />
+    <>
+      <h3>Add a place</h3>
+
+      <div className={`grid place-row${hasLocation ? ' has-selected' : ''}`}>
+        <PlaceSearch city={city} onPick={onPick} />
+        <label>
+          Name in your plan
+          <input name="name" value={form.name} onChange={handleChange} placeholder="Search and pick a place first" />
+        </label>
+      </div>
 
       {hasLocation && (
         <p className="selected">Selected: {form.address}</p>
       )}
 
-      <div className="grid">
-        <label className="wide">
-          Name in your plan
-          <input name="name" value={form.name} onChange={handleChange} placeholder="Search and pick a place first" />
-        </label>
+      <div className="grid place-fields-row">
         <label>
           How long?
           <select name="durationMin" value={form.durationMin} onChange={handleChange}>
@@ -68,7 +56,6 @@ export default function PlaceForm({ onAdd, city }) {
           </select>
         </label>
       </div>
-      <button type="submit" className="primary" disabled={!hasLocation}>Add place</button>
-    </form>
+    </>
   )
 }

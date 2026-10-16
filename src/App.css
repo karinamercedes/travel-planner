@@ -1,55 +1,881 @@
-:root { --accent: #2e6fbd; --bg: #f4f6fa; --text: #1c2430; --muted: #66707f; --line: #dde3ec; }
+:root {
+  --bg: #f6f6ec;
+  --accent: #ca0013;
+  --text: #053f6f;        /* body text, brand navy */
+  --heading: #ca0013;     /* brand red, h1 only */
+  --subhead: #053f6f;     /* section subheadings, brand navy */
+  --muted: #5c7f9c;       /* muted navy, for secondary text */
+  --line: #ddd9c4;        /* subtle divider, a shade off the cream background */
+  --field: #fdfdf5;       /* same cream hue as the page background, just brighter — not stark white, not yellow */
+  --danger: #b3270f;
+  --font-heading: 'Bricolage Grotesque', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Desktop (≥1025px) two-column page: a 20vw sidebar for the persistent
+     film strip + an 80vw content column. --content-pad is 10% of that 80vw
+     column (not of the viewport) — the content's own left/right breathing
+     room, and also what full-bleed sections (the hero) cancel out to reach
+     the column's true edges. vw, not %, so the maths below works out
+     exactly regardless of what .app's own padding resolves against. */
+  --sidebar-w: 20vw;
+  --content-w: 80vw;
+  --content-pad: 8vw;
+  /* Asymmetric: more breathing room on the true left edge of the page than
+     on the inner edge (next to the content column), which also shrinks the
+     carousel itself since its frames size to whatever's left of the 20vw
+     column once both paddings are subtracted. */
+  --sidebar-pad-left: 6vw;
+  --sidebar-pad-right: 4vw;
+  --sidebar-frame-w: calc(var(--sidebar-w) - var(--sidebar-pad-left) - var(--sidebar-pad-right));
+  /* One spacing rhythm, reused everywhere: 100px between distinct blocks,
+     50px between things that belong to the same one. Same at every
+     breakpoint — spacing doesn't shrink on mobile. */
+  --space: 100px;
+  --space-half: 50px;
+}
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; line-height: 1.5; }
-.app { max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; }
-h1 { margin: 0 0 4px; font-size: 1.8rem; }
-h2 { margin: 0 0 12px; font-size: 1.1rem; }
-.muted { color: var(--muted); font-size: 0.9rem; margin: 0; }
-.card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 16px; box-shadow: 0 1px 3px rgba(20, 40, 80, 0.06); }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-body); line-height: 1.5; }
+.app { width: 80%; margin: 0 auto; padding: 0 0 80px; }
+@media (min-width: 1025px) {
+  /* Real two-column layout: sidebar + content side by side, instead of a
+     fixed overlay. Content gets its own 5%-of-column padding instead of
+     being centered with a viewport-relative margin. */
+  .page-layout { display: grid; grid-template-columns: var(--sidebar-w) var(--content-w); }
+  .app { width: auto; margin: 0; padding: 0 var(--content-pad) 80px; }
+}
+
+h1 { font-family: var(--font-heading); font-weight: 700; color: var(--heading); letter-spacing: 0.01em; margin: 0 0 6px; font-size: 2rem; }
+h2, h3 { font-family: var(--font-body); font-weight: 600; color: var(--subhead); letter-spacing: 0.01em; }
+h2 { margin: 0 0 14px; font-size: 1.4rem; }
+/* Same heading font + red as h1/.section-heading, just dialed down to card
+   scale rather than the big display sizes. */
+.list-heading { font-family: var(--font-heading); font-weight: 700; color: var(--heading); font-size: 1.8rem; }
+.subhead { color: var(--subhead); margin: 0 0 8px; font-size: 1rem; font-weight: 500; }
+.muted { color: var(--muted); font-size: 0.95rem; margin: 0; }
+
+/* Sections: same cream background as the page — spacing only, no dividers.
+   (A couple of specific dividers are re-added further down, right where
+   they're wanted: between place-list rows, and after the packing CTA.) */
+.section {
+  padding: 5px 0;
+  margin-top: 22px;
+}
+@media (min-width: 1025px) {
+  .section { padding: 15px 0; }
+}
+
+/* The shared spacing rhythm, as utility classes — placed after .section so
+   they reliably win the margin-top tie when both land on the same element. */
+.space-before { margin-top: var(--space); }
+.space-before-half { margin-top: var(--space-half); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); column-gap: 25px; row-gap: 25px; margin-bottom: 25px; }
 .wide { grid-column: 1 / -1; }
-label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; font-weight: 600; }
-input, select { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
-input:focus, select:focus, button:focus-visible { outline: 3px solid rgba(46, 111, 189, 0.35); outline-offset: 1px; }
-button { font: inherit; cursor: pointer; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
-button.primary { margin-top: 14px; background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; padding: 9px 16px; }
+label { display: flex; flex-direction: column; gap: 4px; font-size: 0.92rem; font-weight: 600; color: var(--muted); }
+
+/* Trip form's first four fields: a firm 4-across row on desktop so City,
+   Days, Start date and Pace always read as one deliberate row, same
+   treatment any later full-width row (e.g. the place form) gets automatically
+   from .grid's auto-fit. */
+.trip-grid { grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 760px) {
+  .trip-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* "Add a place": search + name on one row (half each, the only two fields
+   there), then duration/time/priority as three even columns below. */
+.place-row { grid-template-columns: 1fr; }
+@media (min-width: 760px) {
+  .place-row { grid-template-columns: repeat(2, 1fr); }
+}
+.place-fields-row { grid-template-columns: repeat(2, 1fr); align-items: end; }
+@media (min-width: 760px) {
+  .place-fields-row { grid-template-columns: repeat(3, 1fr); }
+}
+
+input, select {
+  font: inherit; padding: 10px 12px; border: 2px solid var(--text); border-radius: 8px;
+  background: var(--field); color: var(--text); width: 100%;
+}
+/* Every plain <select> (Pace, duration, best time, priority — anything not
+   using the compact .day-select chevron already built for it) relies on the
+   browser's own dropdown arrow, which sits flush against the edge no matter
+   what padding the box declares. Same fix as .day-select: draw the chevron
+   ourselves so it actually keeps the same gap from the right edge as the
+   text keeps from the left (12px each). */
+select:not(.day-select) {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23053f6f' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 34px;
+}
+input::placeholder { color: #6f90ac; }
+input:focus, select:focus, button:focus-visible, .file-button:focus-within {
+  outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent);
+}
+
+button {
+  font: inherit; cursor: pointer; padding: 8px 14px; border-radius: 8px;
+  border: 1px solid var(--line); background: transparent; color: var(--text);
+}
+button:hover { border-color: var(--accent); }
+
+/* The two CTA styles used everywhere on the page, complementary pairs —
+   each one's hover state is the other's resting state:
+     .primary    solid red,   hovers to outlined navy
+     .secondary  outlined navy, hovers to solid red
+   Every CTA on the page — primary, secondary, the download row, restore
+   from file — now shares the same pill shape (radius 100), the same 15px
+   top/bottom padding, the same medium weight, and the same 14px/16px
+   mobile/desktop type size; only horizontal padding and the color pairing
+   differ between variants. */
+.primary {
+  display: inline-block;
+  background: var(--accent); border: 2px solid var(--accent); color: #fff;
+  font-weight: 500; border-radius: 100px; padding: 10px 20px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.primary:hover { background: transparent; border-color: var(--text); color: var(--text); }
+button.ghost { border-color: var(--line); color: var(--muted); }
+button.ghost:hover { color: var(--danger); border-color: var(--danger); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+a.primary:visited { color: #fff; }
+a.primary:visited:hover { color: var(--text); }
+
+/* Solid navy at rest, hovering to an outlined red — covers the hero CTA,
+   "Make your packing list", the calendar/Excel/PDF/backup download
+   buttons. ("Add place" opts out via .reverse, which sets its own colors
+   below and is unaffected by this.) */
+.secondary {
+  display: inline-block;
+  background: transparent; border: 2px solid var(--accent); color: var(--accent);
+  font-weight: 500; border-radius: 100px; padding: 10px 56px;
+  text-decoration: none; cursor: pointer;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.secondary:hover { background: var(--text); border-color: var(--text); color: #fff; }
+/* "Add place" uses the reverse of the usual secondary states: solid red at
+   rest, hovering to transparent with a navy stroke — same size/shape as
+   every other secondary button, just the .primary color pairing instead. */
+.secondary.reverse { background: var(--accent); border-color: var(--accent); color: #fff; }
+.secondary.reverse:hover { background: transparent; border-color: var(--text); color: var(--text); }
+/* .square no longer changes the corner radius (every CTA is a pill now) —
+   it just keeps the download row's buttons at the narrower horizontal
+   padding instead of the full-size secondary's 56px. */
+.primary.square, .secondary.square { padding-left: 20px; padding-right: 20px; }
+
+.primary, .secondary, .file-button.primary { font-size: 13px; }
+@media (min-width: 760px) {
+  .primary, .secondary, .file-button.primary { font-size: 16px; padding-top: 15px; padding-bottom: 15px; }
+}
+
+/* "Add place" needs to stay legible even before a place is picked (its
+   resting/disabled state), not just once you've typed something. */
+button[type='submit'].secondary:disabled { opacity: 0.65; }
+
+.plan-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  margin-bottom: 12px;
+}
+.full-width { width: 100%; display: block; text-align: center; }
+a.full-width, a.primary { text-decoration: none; }
+.link-reset {
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  color: var(--muted);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link-reset:hover {
+  color: var(--accent);
+  border: none;
+}
+
+/* ---------- Hero (section 1) ----------
+   Breaks out to full viewport width (ignoring .app's centered max-width) so
+   the gradient's vw/vh position reads the same way it does as an
+   Elementor section background on the real site; .hero-inner puts the
+   actual content back inside the normal content column. */
+.hero {
+  position: relative;
+  z-index: 0;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  min-height: 90vh;
+  display: flex;
+}
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  width: 80%;
+  margin: 0 auto;
+  min-height: 90vh;
+  padding: 48px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+@media (min-width: 1025px) {
+  /* The 100vw/50vw trick above assumes .app is centered in the viewport,
+     which is no longer true once there's a sidebar column. Here .hero
+     instead breaks out only as far as the content column's own edges
+     (canceling .app's padding, not the sidebar), and .hero-inner picks up
+     that same padding so its content lines up with every other section. */
+  .hero {
+    width: auto;
+    margin-left: calc(-1 * var(--content-pad));
+    margin-right: calc(-1 * var(--content-pad));
+  }
+  .hero-inner {
+    /* .hero is a flex row, so unlike a normal block, "width: auto" on this
+       flex item means "shrink to content" rather than "fill the row" —
+       that's what was leaving it short of the real right edge. width:100%
+       makes it fill .hero's full box, same as before. */
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: var(--content-pad);
+    padding-right: var(--content-pad);
+  }
+}
+
+/* Eyebrow sits near the top; the title/subhead/CTA group is vertically
+   centered in the rest of the section and pinned to the right edge of the
+   content column. */
+.hero .eyebrow {
+  font-weight: 600;
+  color: var(--subhead);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.95rem;
+  margin: 100px 0 180px 0;
+  text-align: right;
+}
+.hero-group {
+  width: 100%;
+  max-width: 820px;
+  margin: 50px 0 0 0;
+  text-align: right;
+}
+.hero h1 { font-size: 4.2rem; font-weight: 700; line-height: 1; margin: 0 0 16px; text-align: right; }
+
+/* The CTA pill is sized off the subhead line itself (3/4 of it), flush on
+   the right: .hero-copy shrinks to its widest child (the subhead), and the
+   CTA is set to a fraction of that same width via align-self so its right
+   edge still lines up with everything else above it. */
+.hero-copy { display: inline-flex; flex-direction: column; align-items: stretch; max-width: 100%; }
+.hero .subhead { font-size: 14px; margin-top: 15px;}
+/* Mobile keeps the fuller width (close to the subhead's own line); from
+   tablet up it's 1.5x the previous 75% (i.e. 112.5%). Scoped to .hero so
+   this layout quirk doesn't leak onto every other .secondary button on the
+   page (Add place, Download, etc.), which should just match their form's
+   width via .full-width. */
+.hero .secondary { margin-top: 40px; width: 100%; align-self: flex-end; text-align: center; }
+
+@media (min-width: 760px) {
+  .hero h1 { font-size: 9rem; }
+  .hero .subhead { font-size: 16px; }
+}
+@media (min-width: 1025px) {
+  .hero h1 { font-size: 9.6rem; }
+  .hero .subhead { font-size: 1.2em; }
+  /* The 112.5% overflow only has room to breathe once the content column
+     is wide enough (desktop's 20vw sidebar + 80vw column layout) — at
+     tablet widths the same 12.5% was overflowing past the page's own
+     left edge, since there isn't 12.5%-of-the-button worth of margin to
+     spare there. */
+  .hero .secondary { width: 112.5%; }
+}
+
+/* One gradient, sized tall enough to run behind both the hero and the
+   plan section underneath it, instead of being clipped to the hero's own
+   height. .hero establishes its own stacking context (position + z-index
+   above), so this stays trapped behind .hero-inner, and the plan section
+   has no background of its own, so the part of this box that overflows
+   past the hero shows through behind it. */
+.gradient-blob {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 220vh;
+  background-image: url('./assets/gradient-blob.png');
+  background-repeat: no-repeat;
+  background-size: 90vw auto;
+  /* x always read as vw, y as vh, matching the laptop/tablet pattern given
+     (the mobile value came through as "x 34vh y 34vh" — treating the x as
+     vw here, since every other breakpoint pairs vw-x with vh-y). */
+  background-position: 24vw 84vh;
+  z-index: 0;
+  pointer-events: none;
+}
+@media (min-width: 760px) {
+  .gradient-blob { background-size: auto 90vh; background-position: 32vw 26vh; }
+}
+@media (min-width: 1025px) {
+  .gradient-blob { background-size: auto 90vh; background-position: 50vw 38vh; }
+}
+
+/* ---------- Editorial section heading: heading large up top, subhead
+   stepped down and indented — two different "eye levels". ---------- */
+.section-heading { margin-bottom: var(--space); display: flex; flex-direction: column; }
+.section-heading h2 {
+  font-family: var(--font-heading);
+  color: var(--heading);
+  font-size: clamp(2.3rem, 6vw, 4rem);
+  font-weight: 700;
+  line-height: 1.05;
+  margin: 0;
+  width: 100%;
+  text-align: left;
+  align-self: flex-start;
+}
+@media (min-width: 760px) {
+  .section-heading h2 { width: 48%; }
+}
+.section-heading .subhead {
+  font-size: 1.2rem;
+  margin: 20px 0 0;
+  width: 100%;
+  text-align: right;
+  align-self: flex-end;
+}
+@media (min-width: 760px) {
+  .section-heading .subhead { width: 48%; }
+}
+
+/* No gradient of its own — the hero's .gradient-blob now runs tall enough
+   to continue behind this section too, so the two sections read as one
+   continuous background instead of two separate gradients. Needs its own
+   stacking position (above the hero's) so its content paints over the
+   gradient instead of under it: plain in-flow content always paints
+   below a positioned neighbour, regardless of DOM order, once that
+   neighbour has a non-negative z-index — which .hero now does. */
+.plan-section {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ---------- Film strip ----------
+   Mirrors the Elementor carousel's feel (slow continuous drift, no pause)
+   rather than its exact slide-by-slide timing, since a CSS loop and a
+   slide-based swiper don't map 1:1 — autoplay speed 10 / animation speed
+   3000 read here as one long, unhurried pass.
+   Mobile (inline, horizontal): each frame layers the real
+   film-strip-mask.png over its own photo, landscape as-is.
+   Desktop (fixed, vertical): that per-frame approach is swapped for the
+   mask tiled as a repeating background down the whole track — one
+   continuous strip rather than a border stitched from separate frames — so
+   there's a pre-rotated copy of the same graphic (sprockets on the left and
+   right) sized to repeat exactly once per photo. */
+.film-strip { overflow: hidden; }
+.film-strip-track { display: flex; }
+/* Every photo also gets its own thin uniform border, on top of whichever
+   framing method the variant uses. */
+.film-frame {
+  position: relative;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  border: 3px solid #000;
+  /* Fills with black as soon as the frame lays out, before its photo has
+     actually arrived over the network — so a slow-loading photo reads as a
+     dark, empty film frame (fits the strip's own look) instead of a blank
+     gap of page background showing through. */
+  background: #000;
+}
+.film-photo { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* The real film-strip graphic, laid on top of the photo — transparent
+   everywhere except its black border + sprocket holes, so it reads as a
+   proper frame rather than a hand-drawn approximation. (Desktop hides this
+   per-frame version in favor of the repeating background below.) */
+.film-mask { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
+
+.film-strip--fixed { display: none; }
+/* Same full-bleed trick as .hero: breaks out of .app's centered column so
+   the strip's frames touch the true left/right viewport edges on mobile,
+   instead of sitting inset within the page's normal side padding. */
+.film-strip--inline {
+  display: block;
+  margin: 0 0 22px;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+.film-strip--inline .film-strip-track {
+  width: max-content;
+  animation: film-scroll-x 140s linear infinite;
+}
+/* Mask graphic is natively landscape (sprockets top/bottom) — matches this
+   horizontal strip's orientation as-is, no rotation needed. */
+.film-strip--inline .film-frame { width: 150px; height: 100px; }
+@keyframes film-scroll-x { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+@media (min-width: 1025px) {
+  .film-strip--inline { display: none; }
+  .film-strip--fixed {
+    display: block;
+    /* Sticky, not fixed: it now lives in its own 20vw grid column (set on
+       .page-layout) rather than being pinned to the raw viewport edge, so
+       it scrolls with — and stays correctly aligned to — the content next
+       to it at any window width, while still staying in view as the page
+       scrolls. */
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 1;
+    background: var(--bg);
+    /* So the strip doesn't touch the column's own edges — more room on the
+       true left edge of the page than on the inner edge next to content. */
+    padding: 0 var(--sidebar-pad-right) 0 var(--sidebar-pad-left);
+  }
+  .film-strip--fixed .film-strip-track {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: max-content;
+    animation: film-scroll-y 500s linear infinite;
+  }
+  .film-strip--fixed .film-frame {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+  }
+  /* A track-level repeating background can't actually work here: the
+     frames sit edge to edge with no gap, so the opaque photos fully cover
+     the track underneath — there's no visible gap left for a background to
+     show through. Back to each frame carrying its own mask on top of its
+     own photo, which works regardless of whether frames touch, since the
+     transparency is cut to that exact photo's bounds rather than relying
+     on exposed gaps. FilmStrip.jsx already swaps in a pre-rotated copy
+     (sprockets left/right) for this variant, so no CSS rotation needed —
+     .film-mask's base rule (inset:0, fill) is already correct as-is. */
+  @keyframes film-scroll-y { from { transform: translateY(-50%); } to { transform: translateY(0); } }
+}
+
+/* ---------- Cards: a divider, never a boxed panel ---------- */
+.card { padding: 18px 0; border-top: 1px solid var(--line); }
+.card:first-child { border-top: none; padding-top: 0; }
+.card.unscheduled { border-top: 1px solid var(--danger); }
+
+/* Each day is its own full-width row (not a boxed card), separated by the
+   same divider the card/places rows use. */
+.day-grid { display: block; }
+
+/* ---------- Map + itinerary (section 3) ---------- */
+.map-itinerary { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+.map-itinerary .map { height: 100%; min-height: 360px; }
+.map-itinerary.stacked { grid-template-columns: 1fr; row-gap: var(--space-half); }
+.map-itinerary.stacked .map-pane .map { height: 360px; }
+@media (max-width: 900px) {
+  .map-itinerary { grid-template-columns: 1fr; row-gap: var(--space-half); }
+  .map-itinerary .map { height: 320px; }
+}
+
+/* The one divider kept from the old section-to-section rule lines: right
+   after the packing-list CTA, separating it from "Download your plan". */
+.packing-cta { text-align: center; padding-top: 16px; margin-top: 11px; padding-bottom: 32px; border-bottom: 1px solid var(--line); }
+.reset-row { text-align: center; margin-top: 20px; }
+/* Overrides .fixes's own margin-top: the gap above each CTA row here comes
+   entirely from the heading/backup-note margin above it (both var(--space)),
+   so it isn't double-counted on top of that. */
+.fixes.fixes-fill { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 0; }
+.fixes-fill .secondary, .fixes-fill .primary { width: 100%; }
+
+/* Places */
 .places { list-style: none; padding: 0; margin: 12px 0 0; }
 .places li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.places li:first-child { border-top: none; }
 .places li div { display: flex; flex-direction: column; }
-.empty { text-align: center; color: var(--muted); margin-top: 24px; }
-.search { margin-bottom: 12px; }
-.search > label { font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 4px; }
-.row { display: flex; gap: 8px; }
-.row input { flex: 1; min-width: 0; }
+.must-see { color: var(--accent); }
+/* Nudges the whole section further from what's above it and closer to
+   what's below it (the map), on top of the shared .space-before-half
+   margin the parent already applies — more of both on desktop. */
+.places-card { margin-top: 10px; margin-bottom: -15px; }
+@media (min-width: 1025px) {
+  .places-card { margin-top: 25px; margin-bottom: -55px; }
+}
+/* The day-select + delete-icon group at the end of each row: stays a row
+   even though the generic ".places li div" rule above stacks other divs
+   in the row into a column. */
+.places li .place-actions { flex-direction: row; align-items: center; gap: 6px; flex-shrink: 0; }
+.empty { text-align: center; color: var(--muted); margin-top: 16px; }
+
+/* Compact day-move select — used here and in the itinerary's day cards
+   below. Custom chevron instead of the native one: the native arrow sits
+   flush against the border with no controllable gap, which is what made
+   it feel squeezed. Roughly 2/3 the footprint of a plain field: smaller
+   type, tighter padding, width down to its content. */
+.day-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: auto;
+  justify-self: end;
+  font-size: 0.8125rem;
+  padding: 6px 26px 6px 10px;
+  background-color: var(--field);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23053f6f' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px 6px;
+}
+
+/* Icon-only buttons (currently just "delete"): no border/background of
+   their own, sized to the icon, colored red, with a soft red hover fill
+   instead of the usual border-goes-red hover every other button has. */
+.icon-button {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: none; border: none; padding: 6px; border-radius: 6px;
+  color: var(--accent); cursor: pointer; line-height: 0;
+}
+.icon-button:hover { background: rgba(202, 0, 19, 0.1); border-color: transparent; }
+
+/* Search */
+.search { margin-bottom: 14px; }
+/* In the "Add a place" row specifically, this would stack on top of the
+   .grid's own row-gap between search and "Name in your plan" (on mobile,
+   where they're stacked), making that gap bigger than the one between any
+   other two fields in the form. Zeroed here so the shared grid gap is the
+   only thing setting the space, same as everywhere else. */
+.place-row .search { margin-bottom: 0; }
+.search > label { font-size: 0.85rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 4px; }
 .results { list-style: none; padding: 0; margin: 8px 0 0; }
-.results button { width: 100%; text-align: left; display: flex; flex-direction: column; margin-bottom: 6px; }
-.selected { background: #eaf3ff; border-radius: 8px; padding: 8px 10px; font-size: 0.85rem; margin: 0 0 12px; }
-.error { color: #b3261e; font-size: 0.9rem; }
+.results button { width: 100%; text-align: left; display: flex; flex-direction: column; margin-bottom: 6px; background: var(--field); }
+/* Red-stroked, same text treatment as the rest of the form (no smaller
+   override), with equal padding and margin top/bottom so the box sits
+   centered in the space it has rather than hugging one side. */
+.selected { background: var(--field); border: 2px solid var(--accent); border-radius: 8px; padding: 15px 10px; font-size: 1rem; font-weight: 400; margin: 15px 0; }
+/* The grid right above .selected has its own 25px margin-bottom (for when
+   there's no .selected box after it), which would otherwise win the
+   sibling-margin collapse and leave more space above the box than below
+   it. Zeroing it out here — only when .selected actually follows — lets
+   .selected's own 15px margin-top set the gap instead, matching its
+   15px margin-bottom below. */
+.place-row.has-selected { margin-bottom: 0; }
+.error { color: var(--danger); font-size: 0.9rem; }
+
+/* City search sits inside the 4-field trip grid row — its suggestion list
+   floats above the layout instead of pushing the row taller. */
+.city-search { position: relative; margin-bottom: 0; }
+.city-search .results {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 2;
+  background: var(--field); border: 1px solid var(--line); border-radius: 8px;
+  padding: 6px; margin-top: 4px; box-shadow: 0 8px 20px rgba(5, 63, 111, 0.12);
+}
+.city-search .results button { margin-bottom: 0; padding: 6px 8px; border: none; }
+/* Only the loading/error status message (a direct child of .city-search)
+   needs to float below the input — not the .muted address line nested
+   inside each result button, which must stay in normal flow so the
+   country actually shows under the city name. */
+.city-search > .muted { position: absolute; top: 100%; margin-top: 4px; }
+.city-search .results .muted { font-size: 0.8rem; }
+
+/* Map */
 .map { height: 320px; border-radius: 10px; }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
-.banner { margin-top: 16px; padding: 12px 14px; border-radius: 12px; border: 1px solid; font-size: 0.95rem; }
+.leaflet-container { background: #eceade; }
+
+/* Feasibility banner: plain text, no box — colored by status instead. */
+.banner { margin: 20px 0; font-size: 0.95rem; color: var(--text); }
 .banner p { margin: 6px 0 0; }
-.banner.fits { background: #e8f5ec; border-color: #7bc28f; }
-.banner.tight { background: #fff4d6; border-color: #e0a800; }
-.banner.toomuch { background: #fdecea; border-color: #e08a83; }
+.banner.fits { color: var(--text); }
+.percent-highlight { color: var(--accent); font-weight: 600; }
+.banner.tight { color: #8a5d12; }
+.banner.toomuch { color: var(--danger); }
 .fixes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .removals { list-style: none; padding: 0; margin: 6px 0 0; }
 .removals li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 0; }
-.plan-controls { margin-top: 16px; display: flex; }
-.plan-controls .primary { margin-top: 0; }
+
+/* Day view: section heading is red (.list-heading, shared with Places);
+   each day's own heading is navy, its date stays muted gray. Every stop
+   row is name + time/duration stacked on the left, day-move/delete on
+   the right — same two-column shape as the Places list above it. */
+.day-heading { color: var(--text); font-size: 1.05rem; }
 .stops { list-style: none; padding: 0; margin: 0; }
-.stops li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 8px 0; border-top: 1px solid var(--line); }
-.time { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--accent); min-width: 118px; }
-.stop-name { flex: 1; min-width: 140px; }
-.unscheduled { border-color: #e08a83; }
-dialog { border: 1px solid var(--line); border-radius: 12px; max-width: 420px; padding: 20px; }
-.file-button { position: relative; flex-direction: row; font-weight: 400; font-size: inherit; padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; cursor: pointer; }
+/* No divider between stops on the same day — the only horizontal rule in
+   the itinerary is .card's own border-top, which already separates one
+   day's card from the next. */
+.stops li {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 10px 0;
+}
+.stop-name { color: var(--text); font-weight: 500; }
+.stop-meta { font-size: 0.85rem; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.stop-time { color: var(--accent); }
+.stop-duration { color: var(--muted); }
+.stop-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+/* Backup */
+/* Same look as the "Make sure to download..." subhead above (font, size,
+   weight, half-width on desktop), just left-aligned instead of right. */
+.backup-note {
+  margin: var(--space) 0 var(--space) 0;
+  color: var(--subhead);
+  text-align: left;
+  font-size: 1.2rem;
+  font-weight: 500;
+  width: 100%;
+}
+@media (min-width: 760px) {
+  .backup-note { width: 48%; }
+}
+.file-button {
+  position: relative; display: inline-flex; align-items: center; font-weight: 400; font-size: inherit;
+  padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--text); cursor: pointer;
+}
+.file-button:hover { border-color: var(--accent); }
 .file-button input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-.file-button:focus-within { outline: 3px solid rgba(46, 111, 189, 0.35); outline-offset: 1px; }
+/* "Restore from file" reads as the solid-red CTA, like everything else in
+   this row — the extra specificity (two or three classes) beats the plain
+   .file-button rules above regardless of source order. */
+.file-button.primary {
+  justify-content: center;
+  background: var(--accent); border: 2px solid var(--accent); color: #fff;
+  font-weight: 500; border-radius: 100px; padding: 10px 20px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.file-button.primary:hover { background: transparent; border-color: var(--text); color: var(--text); }
+
+/* ---------- Contact (closing section) ----------
+   Same editorial pairing as the rest of the page: a plain right-aligned
+   intro line, a big left-aligned red heading, then the email itself as a
+   smaller navy label + red link, right-aligned under it. The hero's
+   gradient graphic is reused here rather than a new asset — this section
+   gets its own position:relative stacking context so the gradient sits
+   behind just the heading rather than running the full section like it
+   does behind the hero. */
+.contact-section {
+  position: relative;
+  z-index: 1;
+  padding-top: var(--space);
+  overflow: hidden;
+}
+.contact-gradient {
+  position: absolute;
+  top: -5vh;
+  left: 0;
+  width: 100%;
+  height: 75vh;
+  background-image: url('./assets/gradient-blob.png');
+  background-repeat: no-repeat;
+  background-size: 88vw auto;
+  background-position: 0vw 28vh;
+  z-index: 0;
+  pointer-events: none;
+}
+@media (min-width: 760px) {
+  .contact-gradient { background-size: auto 55vh; background-position: 0vw 15vh; }
+}
+@media (min-width: 1025px) {
+  .contact-gradient { background-size: auto 65vh; background-position: 0vw 4vh; }
+}
+.contact-intro {
+  position: relative;
+  z-index: 1;
+  text-align: right;
+  font-weight: 500;
+  font-size: 20px;
+  width: 100%;
+  margin: 0 0 100px;
+}
+@media (min-width: 760px) {
+  .contact-intro { width: 48%; margin-left: auto; }
+}
+.contact-heading {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-heading);
+  color: var(--heading);
+  font-size: clamp(2.3rem, 6vw, 4rem);
+  font-weight: 700;
+  line-height: 1.05;
+  text-align: left;
+  width: 100%;
+  margin: 0 0 var(--space);
+}
+@media (min-width: 760px) {
+  .contact-heading { width: 48%; }
+}
+.contact-email {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-bottom:75px;
+  text-align: right;
+}
+.contact-label {
+  font-family: var(--font-heading);
+  color: var(--subhead);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+.contact-link {
+  color: var(--accent);
+  font-size: 1.2rem;
+  font-weight: 500;
+  text-decoration: underline !important; 
+  text-decoration: none;
+}
+.contact-link:hover { text-decoration: underline; }
+
+/* ---------- Mobile-only refinements (<760px) ---------- */
+@media (max-width: 759px) {
+  /* Subheadings read at one consistent size across the page. */
+  .section-heading .subhead, .contact-intro, .hero .subhead { font-size: 1rem; }
+
+  /* Section headings sit closer to what follows them. */
+  .section-heading { margin-bottom: var(--space-half); }
+
+  /* Half the space above "Download your plan". */
+  .space-before { margin-top: var(--space-half); }
+
+  /* Matches the rest of the page's subheading treatment instead of its own
+     oversized top/bottom spacer gaps. */
+  .backup-note { font-size: 1rem; margin: var(--space-half) 0; }
+
+  /* Eyebrow sits closer to the top and to the title beneath it, so the hero
+     reads from eyebrow to the carousel in roughly one screen. */
+  .hero .eyebrow { margin: 50px 0 90px 0; }
+
+  /* The 90vh min-height was leaving a big, viewport-dependent gap of empty
+     space below the CTA before the carousel starts (up to 141px on some
+     phones). Letting the hero size to its own content instead, with a
+     fixed 100px of breathing room below the CTA, gives a consistent gap
+     regardless of screen height. */
+  .hero, .hero-inner { min-height: auto; }
+  .hero-inner { padding-bottom: 100px; }
+
+  /* The carousel was sitting only ~54px from "Your next journey starts
+     here" (vs. 141px above it) — evened up to roughly match the gap above,
+     via the plan section's own top padding rather than .section's shared
+     32px (which every other section still uses). */
+  .plan-section { padding-top: 78px; }
+
+  /* Bigger, taller and shifted right — spans from behind the heading/sub/
+     CTA group, down behind the carousel, tapering off around the next
+     section's heading. A background image is already clipped to its own
+     box by default (no overflow:hidden needed, which would also cut off
+     the vertical bleed into the plan section below), so sizing/positioning
+     alone gives the deliberate half-hidden effect off the right edge. */
+  .gradient-blob { background-size: 140vw 134vh; background-position: 10vw 25vh; }
+
+  /* Second pass at the places-to-map gap, now on mobile too. */
+  .places-card { margin-bottom: -30px; }
+
+  /* Every CTA in "Download your plan" one per row, full width — auto-fit's
+     column count was varying with device width (2-up on some phones,
+     1-up on others), which read as inconsistent. Needs the same two-class
+     specificity as the base rule it's overriding (.fixes.fixes-fill), not
+     just .fixes-fill alone — a single-class selector loses to a two-class
+     one regardless of which comes later in the file, which is why this
+     didn't actually take effect before. */
+  .fixes.fixes-fill { grid-template-columns: 1fr; }
+
+  /* Space between CTAs: 10px total, both within a download-section row
+     and between "Shuffle plan" and "Make your packing list". */
+  .fixes { gap: 10px; }
+  .plan-controls { margin-bottom: 0; }
+  .packing-cta { margin-top: 10px; padding-top: 0; }
+
+  /* CTA and form-field borders read a touch lighter on mobile. */
+  .primary, .secondary, .file-button.primary, input, select, .selected {
+    border-width: 1.5px;
+  }
+
+  /* Subhead sits a bit further from its heading. */
+  .section-heading .subhead { margin-top: 30px; }
+
+  /* Muted/helper text reads smaller on mobile. */
+  .muted { font-size: 0.8rem; }
+
+  /* The second carousel (between "Download your plan" and the closing
+     contact section) gets the same evened-up, fixed 100px top/bottom gap
+     as the first one. Three separate trailing/leading spaces had to be
+     zeroed out first so the 100px figures are the whole story rather than
+     stacking on top of leftover .section padding/margin from three
+     different elements: the results-section's own 32px padding-bottom,
+     DownloadPlan's own inner <section> (also 32px, from the same shared
+     .section rule), and .contact-section's inherited 22px margin-top
+     (it's also className="section contact-section"). None of these
+     selectors are reused elsewhere, so nothing else is affected. */
+  .results-section { padding-bottom: 0; }
+  .no-print.space-before > .section { padding-bottom: 0; }
+  .contact-section { margin-top: 0; }
+  .results-section .film-strip--inline { margin-top: 100px; margin-bottom: 0; }
+}
+
+/* ---------- Tablet-only refinements (760–1024px) ----------
+   Same two fixes as the mobile block above, carried over to tablet: both
+   use fixed px rather than vw/vh, so the same values hold regardless of
+   breakpoint — they just weren't applied here yet. */
+@media (min-width: 760px) and (max-width: 1024px) {
+  /* Same fixed 100px gap below the hero's CTA (instead of the vh-based
+     min-height leaving a screen-height-dependent gap before the first
+     carousel), and the same evened-up gap below it into "Your next
+     journey starts here". */
+  .hero, .hero-inner { min-height: auto; }
+  .hero-inner { padding-bottom: 100px; }
+  .plan-section { padding-top: 78px; }
+
+  /* Second carousel (between "Download your plan" and the contact
+     section): same fixed 100px top/bottom gap, with the same three
+     leftover spacing sources zeroed out first. */
+  .results-section { padding-bottom: 0; }
+  .no-print.space-before > .section { padding-bottom: 0; }
+  .contact-section { margin-top: 0; }
+  .results-section .film-strip--inline { margin-top: 100px; margin-bottom: 0; }
+}
+
 .print-only { display: none; }
 @media print {
   .no-print, .stops select, .stops button { display: none !important; }
-  .print-only { display: block; }
-  body { background: #fff; }
-  .card { box-shadow: none; break-inside: avoid; }
+  .print-only { display: block; color: #000; }
+  body { background: #fff; color: #000; margin: 0; }
+
+  /* Print only the itinerary itself: everything else on the page (hero,
+     film strips, the "Your next journey" form/places section, the map,
+     plan controls, packing-list CTA, download section, contact section)
+     is hidden, and the itinerary's own wrapper boxes lose their padding
+     and side-by-side layout so what's left is plain text plus the
+     .card border-top rules that already divide one day from the next —
+     no backgrounds, no page header or footer chrome. */
+  .page-layout > .film-strip,
+  .hero,
+  .film-strip--inline,
+  .plan-section,
+  .plan-controls,
+  .packing-cta,
+  .reset-row,
+  .contact-section {
+    display: none !important;
+  }
+  .results-section { padding: 0; margin: 0; border: none; }
+  .map-itinerary { display: block; }
+  .itinerary-pane { width: 100%; }
+  .card { padding: 12px 0; }
+}
+.section h3:first-child { margin-top: 0; }
+h3 { font-size: 1.05rem; margin: 18px 0 12px; }
+.map-section { margin-top: 0; }
+
+input[type="date"] {
+  cursor: pointer;
+}
+
+input[type="startDate"] {
+  cursor: pointer;
 }

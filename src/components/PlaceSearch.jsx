@@ -1,30 +1,29 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { searchPlaces } from '../utils/geocode'
+import useDebounce from '../hooks/useDebounce'
 
 export default function PlaceSearch({ city, onPick }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [status, setStatus] = useState('idle') // idle | loading | empty | error
+  const debouncedQuery = useDebounce(query, 500)
+  const controllerRef = useRef(null) // lets us cancel a search that's no longer needed
 
-  async function handleSearch() {
-    if (!query.trim()) return
+  useEffect(() => {
+    const q = debouncedQuery.trim()
+    if (q.length < 3) { setResults([]); setStatus('idle'); return }
+
+    controllerRef.current?.abort() // cancel any search still in flight
+    const controller = new AbortController()
+    controllerRef.current = controller
+
     setStatus('loading')
-    try {
-      const found = await searchPlaces(query.trim(), city)
-      setResults(found)
-      setStatus(found.length ? 'idle' : 'empty')
-    } catch {
-      setStatus('error')
-    }
-  }
+    searchPlaces(q, city, controller.signal)
+      .then((found) => { setResults(found); setStatus(found.length ? 'idle' : 'empty') })
+      .catch((err) => { if (err.name !== 'AbortError') setStatus('error') })
 
-  // Inside a <form>, Enter would submit the whole form, so we catch it here.
-  function handleKeyDown(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleSearch()
-    }
-  }
+    return () => controller.abort()
+  }, [debouncedQuery, city])
 
   function pick(result) {
     onPick(result)
@@ -35,18 +34,14 @@ export default function PlaceSearch({ city, onPick }) {
   return (
     <div className="search">
       <label htmlFor="place-search">Search for a place</label>
-      <div className="row">
-        <input
-          id="place-search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="e.g. Louvre"
-        />
-        <button type="button" onClick={handleSearch} disabled={status === 'loading'}>
-          {status === 'loading' ? 'Searching...' : 'Search'}
-        </button>
-      </div>
+      <input
+        id="place-search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="e.g. Louvre"
+        autoComplete="off"
+      />
+      {status === 'loading' && <p className="muted">Searching...</p>}
       {status === 'error' && <p className="error" role="alert">Search failed. Please try again in a moment.</p>}
       {status === 'empty' && <p className="muted">No results. Try a different name.</p>}
       <ul className="results">

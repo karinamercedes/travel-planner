@@ -7,7 +7,7 @@ export default function FeasibilityBanner({ result, trip, onChangeTrip, onDelete
   if (status === 'fits') {
     return (
       <div className="banner fits" role="status">
-        Your plan fits. About {percent}% of your available time is used.
+        Your plan fits. About <span className="percent-highlight">{percent}%</span> of your available time is used.
       </div>
     )
   }
