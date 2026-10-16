@@ -143,12 +143,14 @@ export default function App() {
             <div className="no-print space-before">
               <DownloadPlan itinerary={itinerary} places={places} trip={trip} onImport={importBackup} />
             </div>
-
-            {/* Mobile-only: the strip repeats once more here, between the
-                download section and the closing contact section. */}
-            <FilmStrip variant="inline" />
           </section>
         )}
+
+        {/* Mobile-only: the strip repeats once more here, between the plan
+            section and the closing contact section. Outside the itinerary
+            block on purpose — it should always be there, not only once a
+            plan exists. */}
+        <FilmStrip variant="inline" />
 
         <ContactSection />
         </main>

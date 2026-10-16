@@ -760,9 +760,10 @@ a.full-width, a.primary { text-decoration: none; }
      oversized top/bottom spacer gaps. */
   .backup-note { font-size: 1rem; margin: var(--space-half) 0; }
 
-  /* Eyebrow sits closer to the top and to the title beneath it, so the hero
-     reads from eyebrow to the carousel in roughly one screen. */
-  .hero .eyebrow { margin: 50px 0 90px 0; }
+  /* Eyebrow sits right at the top of the screen (max 25px) and closer to
+     the title beneath it, so the hero reads from eyebrow to the carousel
+     in roughly one screen. */
+  .hero .eyebrow { margin: 25px 0 90px 0; }
 
   /* The 90vh min-height was leaving a big, viewport-dependent gap of empty
      space below the CTA before the carousel starts (up to 141px on some
@@ -815,20 +816,24 @@ a.full-width, a.primary { text-decoration: none; }
   /* Muted/helper text reads smaller on mobile. */
   .muted { font-size: 0.8rem; }
 
-  /* The second carousel (between "Download your plan" and the closing
-     contact section) gets the same evened-up, fixed 100px top/bottom gap
-     as the first one. Three separate trailing/leading spaces had to be
-     zeroed out first so the 100px figures are the whole story rather than
-     stacking on top of leftover .section padding/margin from three
-     different elements: the results-section's own 32px padding-bottom,
-     DownloadPlan's own inner <section> (also 32px, from the same shared
-     .section rule), and .contact-section's inherited 22px margin-top
-     (it's also className="section contact-section"). None of these
-     selectors are reused elsewhere, so nothing else is affected. */
+  /* The second carousel (now always rendered, between the plan/results
+     area and the closing contact section — not only once a plan exists)
+     gets the same evened-up, fixed 100px top/bottom gap as the first one.
+     It's picked out from the first (identical-class) instance with :has(),
+     since it's always the one immediately followed by the contact section,
+     whether or not a results-section happens to come before it. Three
+     separate trailing/leading spaces had to be zeroed out first so the
+     100px figure is the whole story rather than stacking on top of
+     leftover .section padding/margin from three different elements: the
+     results-section's own padding-bottom, DownloadPlan's own inner
+     <section> (same shared .section rule), and .contact-section's
+     inherited margin-top (it's also className="section contact-section").
+     None of these selectors are reused elsewhere, so nothing else is
+     affected. */
   .results-section { padding-bottom: 0; }
   .no-print.space-before > .section { padding-bottom: 0; }
   .contact-section { margin-top: 0; }
-  .results-section .film-strip--inline { margin-top: 100px; margin-bottom: 0; }
+  .film-strip--inline:has(+ .contact-section) { margin-top: 100px; margin-bottom: 0; }
 }
 
 /* ---------- Tablet-only refinements (760–1024px) ----------
@@ -844,13 +849,14 @@ a.full-width, a.primary { text-decoration: none; }
   .hero-inner { padding-bottom: 100px; }
   .plan-section { padding-top: 78px; }
 
-  /* Second carousel (between "Download your plan" and the contact
-     section): same fixed 100px top/bottom gap, with the same three
-     leftover spacing sources zeroed out first. */
+  /* Second carousel (always rendered, between the plan/results area and
+     the contact section): same fixed 100px top/bottom gap, with the same
+     three leftover spacing sources zeroed out first, and the same :has()
+     pick of "whichever instance sits right before the contact section". */
   .results-section { padding-bottom: 0; }
   .no-print.space-before > .section { padding-bottom: 0; }
   .contact-section { margin-top: 0; }
-  .results-section .film-strip--inline { margin-top: 100px; margin-bottom: 0; }
+  .film-strip--inline:has(+ .contact-section) { margin-top: 100px; margin-bottom: 0; }
 }
 
 .print-only { display: none; }
