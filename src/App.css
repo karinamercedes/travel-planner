@@ -71,7 +71,17 @@ h2 { margin: 0 0 14px; font-size: 1.4rem; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); column-gap: 25px; row-gap: 25px; margin-bottom: 25px; }
 .wide { grid-column: 1 / -1; }
-label { display: flex; flex-direction: column; gap: 4px; font-size: 0.92rem; font-weight: 600; color: var(--muted); }
+/* min-width:0 overrides the browser's default min-width:auto on both the
+   grid item and the flex item below it. Without it, a field whose native
+   content has a wide intrinsic size — a date input is the one that bites:
+   its calendar-picker chrome measures noticeably wider in iOS Safari than
+   in Chromium — refuses to shrink to its grid column's actual width and
+   instead pushes the column wider than its 1fr share, shrinking or
+   zeroing the gap to whatever sits next to it. This was invisible in
+   Chromium testing (its date-input chrome is narrow enough to never hit
+   the limit) but showed up as an oversized Start date field crowding
+   Pace on a real phone. */
+label { display: flex; flex-direction: column; gap: 4px; font-size: 0.92rem; font-weight: 600; color: var(--muted); min-width: 0; }
 
 /* Trip form's first four fields: a firm 4-across row on desktop so City,
    Days, Start date and Pace always read as one deliberate row, same
@@ -95,7 +105,7 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.92rem; fon
 
 input, select {
   font: inherit; padding: 10px 12px; border: 2px solid var(--text); border-radius: 8px;
-  background: var(--field); color: var(--text); width: 100%;
+  background: var(--field); color: var(--text); width: 100%; min-width: 0;
 }
 /* Every plain <select> (Pace, duration, best time, priority — anything not
    using the compact .day-select chevron already built for it) relies on the
