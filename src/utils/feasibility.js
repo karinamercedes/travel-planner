@@ -1,5 +1,5 @@
 // The overload check: does the plan fit in the days the traveller has?
-// It is plain maths (no AI): add up the time the places need, compare with the time available.
+// It is plain maths: add up the time the places need, compare with the time available.
 
 // Time available in one day, in minutes. Gaps between windows are meals and rest:
 // morning 09:00-13:00, afternoon 14:00-18:00, evening 19:00-22:00.
