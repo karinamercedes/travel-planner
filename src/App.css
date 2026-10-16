@@ -820,6 +820,23 @@ a.full-width, a.primary { text-decoration: none; }
     border-width: 1.5px;
   }
 
+  /* Start date was sharing its row with Pace at this width (same pairing
+     as City/Days above it). min-width:0 on the grid item and the input
+     itself (see the shared input/select rule and the "label" rule up
+     top) stops the *grid column* from being forced wider than its 1fr
+     share, but a native date control's own internal chrome can still
+     render wider than the box CSS gives it on some phones — Chromium's
+     is compact enough to never hit this, but it's exactly the kind of
+     thing that doesn't show up in that testing and only turns up on a
+     real device. Giving Start date (and Pace, so it doesn't end up
+     alone on a half-width row by itself) a full-width row of its own
+     removes the neighbour it could ever crowd into, rather than trying
+     to out-guess how wide one phone's native picker chrome renders. */
+  .trip-grid > label:nth-child(3),
+  .trip-grid > label:nth-child(4) {
+    grid-column: 1 / -1;
+  }
+
   /* Subhead sits a bit further from its heading. */
   .section-heading .subhead { margin-top: 30px; }
 
@@ -910,6 +927,10 @@ h3 { font-size: 1.05rem; margin: 18px 0 12px; }
 input[type="date"] {
   cursor: pointer;
   color-scheme: light;
+  /* Belt-and-braces alongside the trip-grid row fix above: whatever the
+     native picker's own internal chrome renders, it stops at this box's
+     edge instead of bleeding into whatever sits next to it. */
+  overflow: hidden;
 }
 input[type="date"]::-webkit-date-and-time-value {
   text-align: left;
