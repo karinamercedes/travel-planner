@@ -22,9 +22,15 @@ export default function FilmStrip({ variant = 'inline' }) {
   // The fixed/desktop strip is visible the moment the page loads (it's the
   // sidebar, not something you scroll down to), so its first few photos
   // should start fetching immediately rather than waiting on the lazy-load
-  // heuristic — that wait is what was showing as an empty frame. The
-  // inline/mobile strip is further down the page, so lazy-loading it still
-  // makes sense.
+  // heuristic — that wait is what was showing as an empty frame.
+  //
+  // The inline/mobile strip is rendered twice, the second instance well
+  // down the page inside an animated, horizontally-transformed track —
+  // some mobile browsers' native lazy-load never triggers for images in
+  // that situation (the intersection check runs against a layout position
+  // that the transform keeps shifting), so that second strip was rendering
+  // completely blank. Its photo count is small, so loading it eagerly too
+  // costs little and is reliable everywhere, unlike lazy-loading here.
   const eagerCount = 4
 
   return (
@@ -36,7 +42,7 @@ export default function FilmStrip({ variant = 'inline' }) {
               className="film-photo"
               src={src}
               alt=""
-              loading={variant === 'fixed' && i < eagerCount ? 'eager' : 'lazy'}
+              loading={variant === 'inline' || i < eagerCount ? 'eager' : 'lazy'}
               decoding="async"
             />
             <img className="film-mask" src={mask} alt="" aria-hidden="true" />

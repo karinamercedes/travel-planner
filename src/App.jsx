@@ -11,6 +11,7 @@ import PlanControls from './components/PlanControls'
 import DayView from './components/DayView'
 import PackingListCta from './components/PackingListCta'
 import DownloadPlan from './components/DownloadPlan'
+import RestoreFromFileCta from './components/RestoreFromFileCta'
 import ContactSection from './components/ContactSection'
 import { checkFeasibility } from './utils/feasibility'
 import { planTrip } from './utils/planner'
@@ -103,6 +104,12 @@ export default function App() {
                 Add place
               </button>
             </form>
+
+            {/* Lets someone who already has a backup get straight back to
+                it, instead of being forced to add a place first just to
+                reach the "Restore from file" button buried in the download
+                section further down. */}
+            <RestoreFromFileCta onImport={importBackup} />
           </div>
 
           <div className="no-print space-before-half">

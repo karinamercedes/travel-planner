@@ -167,9 +167,9 @@ a.primary:visited:hover { color: var(--text); }
    padding instead of the full-size secondary's 56px. */
 .primary.square, .secondary.square { padding-left: 20px; padding-right: 20px; }
 
-.primary, .secondary, .file-button.primary { font-size: 13px; }
+.primary, .secondary, .file-button.primary, .file-button.secondary { font-size: 13px; }
 @media (min-width: 760px) {
-  .primary, .secondary, .file-button.primary { font-size: 16px; padding-top: 15px; padding-bottom: 15px; }
+  .primary, .secondary, .file-button.primary, .file-button.secondary { font-size: 16px; padding-top: 15px; padding-bottom: 15px; }
 }
 
 /* "Add place" needs to stay legible even before a place is picked (its
@@ -646,6 +646,20 @@ a.full-width, a.primary { text-decoration: none; }
   text-transform: uppercase; letter-spacing: 0.04em;
 }
 .file-button.primary:hover { background: transparent; border-color: var(--text); color: var(--text); }
+/* Same idea, matching .secondary's outline look (transparent fill, red
+   stroke) instead — same two-class-specificity reasoning as .file-button.
+   primary above, so it reliably beats the plain .file-button rules. Full
+   width and the same shape as "Add place" above it, since this sits
+   directly under it as its alternative. */
+.file-button.secondary {
+  justify-content: center;
+  background: transparent; border: 2px solid var(--accent); color: var(--accent);
+  font-weight: 500; border-radius: 100px; padding: 10px 20px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  width: 100%; display: flex;
+}
+.file-button.secondary:hover { background: var(--text); border-color: var(--text); color: #fff; }
+.restore-cta { margin-top: 10px; }
 
 /* ---------- Contact (closing section) ----------
    Same editorial pairing as the rest of the page: a plain right-aligned
@@ -659,7 +673,6 @@ a.full-width, a.primary { text-decoration: none; }
   position: relative;
   z-index: 1;
   padding-top: var(--space);
-  overflow: hidden;
 }
 .contact-gradient {
   position: absolute;
@@ -792,7 +805,7 @@ a.full-width, a.primary { text-decoration: none; }
   .packing-cta { margin-top: 10px; padding-top: 0; }
 
   /* CTA and form-field borders read a touch lighter on mobile. */
-  .primary, .secondary, .file-button.primary, input, select, .selected {
+  .primary, .secondary, .file-button.primary, .file-button.secondary, input, select, .selected {
     border-width: 1.5px;
   }
 
@@ -872,10 +885,17 @@ a.full-width, a.primary { text-decoration: none; }
 h3 { font-size: 1.05rem; margin: 18px 0 12px; }
 .map-section { margin-top: 0; }
 
+/* iOS Safari renders a date field's native picker chrome with its own
+   sizing/background that ignores a plain background-color on the input,
+   which is what was showing as oversized and white instead of matching
+   every other field. color-scheme:light keeps that native chrome light
+   (not a mismatched dark system theme), and the text-align fix keeps the
+   dd/mm/yyyy value lined up the same as a typed field. */
 input[type="date"] {
   cursor: pointer;
+  color-scheme: light;
 }
-
-input[type="startDate"] {
-  cursor: pointer;
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+  min-height: 1.2em;
 }
