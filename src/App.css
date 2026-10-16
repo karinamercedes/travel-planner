@@ -848,6 +848,17 @@ a.full-width, a.primary { text-decoration: none; }
      trying to clip it after the fact. */
   input[type="date"] { font-size: 0.85rem; padding-left: 10px; padding-right: 10px; }
 
+  /* Even with that smaller text, there's no way to measure from here how
+     wide iOS's own picker chrome decides to render the box itself — it's
+     the native control's call, not something this CSS width is proven to
+     bound on that engine. Start date already has its own full-width row
+     (above), so halving its box leaves real margin between its right edge
+     and the page's, whatever the native chrome adds on top, rather than
+     trying to guess the exact overrun and match it. */
+  .trip-grid > label:nth-child(3) input[type="date"] {
+    width: 50%;
+  }
+
   /* Subhead sits a bit further from its heading. */
   .section-heading .subhead { margin-top: 30px; }
 
