@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import useLocalStorage from './hooks/useLocalStorage'
+import useScrollToHash from './hooks/useScrollToHash'
 import Hero from './components/Hero'
 import FilmStrip from './components/FilmStrip'
 import TripForm from './components/TripForm'
@@ -23,26 +24,23 @@ const emptyPlace = {
 }
 
 export default function App() {
+  // A link to this page that already carries a hash — .../#plan from
+  // another site, say — arrives at a blank <div id="root">: this is a
+  // client-rendered app with nothing in the initial HTML yet, so the
+  // browser's own "scroll straight to this id" runs once, immediately,
+  // against a page that doesn't have the target element yet, finds
+  // nothing, and gives up. useScrollToHash() redoes it after the real
+  // content exists, and retries once more after a short settle delay in
+  // case images/fonts loading in above the target shift it afterwards --
+  // a single immediate retry alone could still land short.
+  useScrollToHash()
+
   const [trip, setTrip] = useLocalStorage('tp-trip', defaultTrip)
   const [places, setPlaces] = useLocalStorage('tp-places', [])
   const [planned, setPlanned] = useLocalStorage('tp-planned', false)
   const [planSeed, setPlanSeed] = useState(0) // 0 = the plain plan; shuffle bumps this
   const [placeForm, setPlaceForm] = useState(emptyPlace)
   const hasLocation = placeForm.lat !== null
-
-  // A link to this page that already carries a hash — .../#plan from
-  // another site, say — arrives at a blank <div id="root">: this is a
-  // client-rendered app with nothing in the initial HTML yet, so the
-  // browser's own "scroll straight to this id" runs once, immediately,
-  // against a page that doesn't have the target element yet, finds
-  // nothing, and gives up. It doesn't retry once React actually renders
-  // the section a moment later, so the visit silently lands at the top
-  // instead. Redone here, after the real content exists.
-  useEffect(() => {
-    if (!window.location.hash) return
-    const el = document.querySelector(window.location.hash)
-    if (el) el.scrollIntoView()
-  }, [])
 
   // Adding a place and (re)planning the trip are now one action: every time
   // a place is added, the itinerary below re-plans itself immediately so
