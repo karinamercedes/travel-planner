@@ -2,8 +2,8 @@
 
 A free, no-signup web app for planning a multi-day trip. Add the places you want to visit, how long each one takes and when in the day suits it, and the app groups them into realistic days by how close they are to each other. Warns you if you've planned too much for the time you have, and exports the result as a calendar file, CSV/Excel sheet, or PDF.
 
-**Live demo:** _add your Vercel link here once deployed_
-**Repo:** _add your GitHub link here_
+**Live demo:** https://travel-planner-seven-ebon.vercel.app/
+**Repo:** https://github.com/karinamercedes/travel-planner
 
 ## Why this exists
 
